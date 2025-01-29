@@ -1,8 +1,8 @@
 --自定义数据类型
-Type=type
+Type = type
 
 function type(var)
-  if Type(var) == "table" and var.__user_custom_data_type__ then
+  if Type(var) == "table" 和 var.__user_custom_data_type__ then
     return var.__user_custom_data_type__
    else
     return Type(var)
@@ -59,7 +59,7 @@ function string.tryto(str)
     return true
    elseif str == "false" then
     return false
-   elseif string.sub(str, 1, 8) == "function" and string.sub(str, -3) == "end" then
+   elseif string.sub(str, 1, 8) == "function" 和 string.sub(str, -3) == "end" then
     return loadstring(str)
    else
     return trytonumber(str)
@@ -136,7 +136,7 @@ end
 
 --用表2的值覆盖表1
 function table.override(tb1, tb2)
-  if Type(tb1) == "table" and Type(tb2) == "table" then
+  if Type(tb1) == "table" 和 Type(tb2) == "table" then
     for key, value in pairs(tb2) do
       tb1[key] = value
     end
@@ -156,10 +156,10 @@ end
 
 
 
---求合集（索引相同的后一个覆盖前一个）
+--合并table（索引相同的后一个覆盖前一个）
 function table.collect(tb1, tb2)
   local result = table.copy(tb1)
-  if Type(tb1) == "table" and Type(tb2) == "table" then
+  if Type(tb1) == "table" 和 Type(tb2) == "table" then
     local result = tb1
     for key, value in pairs(tb2) do
       result[key] = value
@@ -191,27 +191,6 @@ end
 
 
 
---函数封装
-function packMe(...)
-  local function iter(methods, current)
-    local length = #methods
-    current = current + 1
-    local current_value = methods[current]
-    methods[current] = nil
-    if length == 0 then
-      return function end
-     else
-      return function(...)
-        current_value(...)
-        iter(methods, current)(...)
-      end
-    end
-  end
-  return iter({...}, 0)
-end
-
-
-
 --分离table的数组部分与非数组部分
 function table.detach(tb, extract)
   local array = {}
@@ -231,6 +210,26 @@ function table.detach(tb, extract)
   end
 end
 
+
+
+--函数封装
+function packMe(...)
+  local function iter(methods, current)
+    local length = #methods
+    current = current + 1
+    local current_value = methods[current]
+    methods[current] = nil
+    if length == 0 then
+      return function end
+     else
+      return function(...)
+        current_value(...)
+        iter(methods, current)(...)
+      end
+    end
+  end
+  return iter({...}, 0)
+end
 
 
 
