@@ -40,7 +40,7 @@ end
 local function checkargs(...)
   local result, last, n = checkreturn(...)
   local type = ...
-  return result or error("bad argument #" .. last .. " to '" .. debug.getinfo(2, "n").name .. "' (" .. select( 1 + last + n, ...) .. " expected, got " .. type(select( 1 + last, ...)) .. ")", 3)
+  return result or error("bad argument #" .. last .. " to '" .. (debug.getinfo(2, "n").name or "unknown function") .. "' (" .. select( 1 + last + n, ...) .. " expected, got " .. type(select( 1 + last, ...)) .. ")", 3)
 end
 
 
@@ -233,7 +233,7 @@ local function tb_to_str(tb, max_depth, indent)
   indent = indent or 0
   max_depth = max_depth or 10 -- 默认最大递归深度 10
   if indent >= max_depth then
-    return "{...}" -- 超过最大深度时省略，防止栈溢出
+    return tostring(tb) -- 超过最大深度时省略，防止栈溢出
   end
   local str_list = {}
   local prefix = string.rep("  ", indent)
@@ -245,6 +245,16 @@ local function tb_to_str(tb, max_depth, indent)
   return "{\n" .. table.concat(str_list, ",\n") .. "\n" .. string.rep("  ", indent - 1) .. "}"
 end
 
+
+
+-- 数组转字符串
+local function array_to_str(array)
+  local str_list = {}
+  for _, val in ipairs(array) do
+    rawset(str_list, _, tostring(val))
+  end
+  return "{ " .. table.concat(str_list, ", ") .. " }"
+end
 
 
 -- 打印完整表格（支持多个参数）
@@ -260,7 +270,11 @@ end
 
 -- 打印完整表格（支持指定深度）
 function table.print(tb, max_depth)
-  print(tb_to_str(tb, max_depth))
+  if max_depth then
+    print(tb_to_str(tb, max_depth))
+   else
+    print(array_to_str(tb))
+  end
 end
 
 
