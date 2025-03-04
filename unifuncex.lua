@@ -16,8 +16,9 @@ end
 -- 检查变量通过某函数后的返回值是否符合预期
 function checkreturn(func, ...)
   local args = {...}
-  local n = #args // 2
-  if #args % 2 ~= 0 then
+  local args_n = #args
+  local n = args_n >> 1
+  if args_n & 1 == 1 then
     table.insert(args, "any")
     n = n + 1
   end
@@ -195,13 +196,29 @@ end
 
 
 -- 执行shell命令并返回shell输出
-function shell(command, inTerminal)
+local function push_command(command, inTerminal)
   local handle = assert(io.popen(command), "Failed to open pipe for command: "..command)
   local result = handle:read("*a")
   local status = handle:close()
   assert(status, "Failed to close handle after command: "..command)
-  return inTerminal and result or result:sub(1, -2)
+  return result
 end
+
+
+
+shell = {
+  __call = function(self, ...)
+    return push_command(...)
+  end,
+  __index = function(self, cmd)
+    return function(...)
+      local args = { cmd, ... }
+      return push_command(table.concat(args, " "))
+    end
+  end,
+}
+shell.sh = shell
+setmetatable(shell, shell)
 
 
 
@@ -249,6 +266,9 @@ end
 
 -- 数组转字符串
 local function array_to_str(array)
+  if rawtype(array) ~= "table" then
+    return tostring(array)
+  end
   local str_list = {}
   for _, val in ipairs(array) do
     rawset(str_list, _, tostring(val))
