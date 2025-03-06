@@ -39,38 +39,9 @@ end
 
 -- 检查参数类型
 local function checkargs(...)
-  local result, last, n = checkreturn(...)
+  local result, rupt, n = checkreturn(...)
   local type = ...
-  return result or error("bad argument #" .. last .. " to '" .. (debug.getinfo(2, "n").name or "unknown function") .. "' (" .. select( 1 + last + n, ...) .. " expected, got " .. type(select( 1 + last, ...)) .. ")", 3)
-end
-
-
-
--- 参数类型自动检查器
-function ArgTypeAutoChecker(_begin, _end, ...)
-  local ignore_b = rawtype(_begin) == "string"
-  local ignore_e = rawtype(_end) == "string"
-  local info = debug.getinfo(2, "nu")
-  local name = info.name or "anonymous function"
-  local nparams = info.nparams
-  local exception
-  if ignore_b then
-    exception = ignore_e and error("Invalid argument types") or { _begin, _end, ... }
-    _begin, _end = 1, nparams
-   elseif ignore_e then
-    exception = { _end, ... }
-    _end = nparams
-   else
-    exception = _end <= nparams and { ... } or error("number of parameters out of range")
-  end
-  for cur_index = _begin, _end do
-    local _, arg = debug.getlocal(2, cur_index)
-    local arg_type = rawtype(arg)
-    local expected_type = exception[cur_index - _begin + 1]
-    if arg_type ~= expected_type then
-      error("bad argument #" .. cur_index .. " to '" .. name .. "' (" .. expected_type .. " expected, got " .. arg_type .. ")", 3)
-    end
-  end
+  return result or error(string.format("bad argument #%s to '%s' (%s expected, got %s)", rupt , debug.getinfo(2, "n").name or "unknown function", select( 1 + last + n, ...), type(select( 1 + last, ...))), 3)
 end
 
 
@@ -189,8 +160,8 @@ end
 
 
 -- 格式化输出
-function printf(form, ...)
-  print(type(form) == "string" and form:format(...) or tostring(form))
+function printf(str, ...)
+  print(type(str) == "string" and str:format(...) or tostring(str))
 end
 
 
@@ -243,7 +214,7 @@ end
 
 
 -- 列出完整表格
-local function tb_to_str(tb, max_depth, indent)
+function tb_to_str(tb, max_depth, indent)
   if rawtype(tb) ~= "table" then
     return tostring(tb)
   end
@@ -265,15 +236,15 @@ end
 
 
 -- 数组转字符串
-local function array_to_str(array)
-  if rawtype(array) ~= "table" then
-    return tostring(array)
+function table.tostring(tb, sep, _start, _end)
+  if rawtype(tb) ~= "table" then
+    return tostring(tb)
   end
   local str_list = {}
-  for _, val in ipairs(array) do
-    rawset(str_list, _, tostring(val))
+  for i = 1, #tb do
+    rawset(str_list, i, tostring(tb[i]))
   end
-  return "{ " .. table.concat(str_list, ", ") .. " }"
+  return sep and table.concat(str_list, sep, _start, _end) or "{ " .. table.concat(str_list, ", ", _start, _end) .. " }"
 end
 
 
@@ -293,7 +264,7 @@ function table.print(tb, max_depth)
   if max_depth then
     print(tb_to_str(tb, max_depth))
    else
-    print(array_to_str(tb))
+    print(table.tostring(tb))
   end
 end
 
