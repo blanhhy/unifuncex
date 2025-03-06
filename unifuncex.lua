@@ -214,7 +214,7 @@ end
 
 
 -- 列出完整表格
-function tb_to_str(tb, max_depth, indent)
+local function tb_to_str(tb, max_depth, indent)
   if rawtype(tb) ~= "table" then
     return tostring(tb)
   end
