@@ -1,14 +1,13 @@
 --封装type函数
-if rawequal(type(setmetatable({"unifuncex"}, { __type = function(self) return self[1] end })), "unifuncex") then
-  -- 如果已经被封装，则导入备用的c包
-  rawtype = require "rawtype"
- else
+if type(setmetatable({}, { __type = function() end })) then
   rawtype = type
   function type(var)
     local _type = rawtype(var)
     local meta = getmetatable(var)
     return meta and meta.__type and meta.__type(var) or _type
   end
+ else
+  rawtype = require "rawtype" -- 如果已经被封装，则导入备用的c包
 end
 
 
