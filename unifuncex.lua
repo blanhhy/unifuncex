@@ -188,7 +188,6 @@ shell = {
     end
   end,
 }
-shell.sh = shell
 setmetatable(shell, shell)
 
 
@@ -304,7 +303,7 @@ end
 
 
 
--- 继承所有键值对
+-- 继承所有引用
 function table.inherit(tb)
   return table.override({}, tb)
 end
